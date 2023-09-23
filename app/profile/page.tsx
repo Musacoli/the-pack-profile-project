@@ -26,3 +26,5 @@ export default async function Profile() {
     </div>
   )
 }
+
+export const dynamic = 'force-dynamic'
