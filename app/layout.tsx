@@ -1,6 +1,7 @@
 import './globals.css'
 import type {Metadata} from 'next'
-import {Inter} from 'next/font/google'
+import { Inter } from 'next/font/google'
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({subsets: ['latin']})
 
@@ -21,6 +22,7 @@ export default function RootLayout({
           className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-between p-5 lg:p-24 m-10 border-2 border-primary rounded-xl">
           {children}
         </main>
+        <Toaster />
       </body>
     </html>
   )

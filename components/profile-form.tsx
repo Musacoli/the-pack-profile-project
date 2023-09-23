@@ -7,6 +7,7 @@ import { Session, createClientComponentClient } from '@supabase/auth-helpers-nex
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react"
+import toast from "react-hot-toast";
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -63,7 +64,7 @@ export default function ProfileForm({ session }: { session: Session | null }) {
         form.setValue('bio', data.bio || '')
       }
     } catch (error) {
-      alert('Error loading user data!')
+      toast.error('Error loading user data!')
     } finally {
       setLoading(false)
     }
@@ -75,7 +76,6 @@ export default function ProfileForm({ session }: { session: Session | null }) {
 
 
   const handleSubmit = async (values: z.infer<typeof profileFormSchema>) => {
-    console.log(values)
 
     const { firstName, lastName, username, bio } = values
 
@@ -91,9 +91,9 @@ export default function ProfileForm({ session }: { session: Session | null }) {
         updated_at: new Date().toISOString(),
       })
       if (error) throw error
-      alert('Profile updated!')
+      toast.success('Profile updated!')
     } catch (error) {
-      alert('Error updating the data!')
+      toast.error('Error updating the data!')
     } finally {
       setLoading(false)
     }
