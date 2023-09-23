@@ -1,8 +1,12 @@
 'use client'
+
 import * as z from "zod";
 
+import { useCallback, useEffect, useState } from 'react'
+import { Session, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react"
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -20,20 +24,79 @@ import { Textarea } from "@/components/ui/textarea";
 
 // Utils
 import { profileFormSchema } from "@/lib/formSchemas/profileForm";
+import { Database } from "@/types/supabase";
 
-export default function ProfileForm() {
+export default function ProfileForm({ session }: { session: Session | null }) {
+  const supabase = createClientComponentClient<Database>()
+  const [loading, setLoading] = useState(true)
+
+  const user = session?.user
+
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      username: "",
       bio: "",
     },
   })
 
-  const handleSubmit = (values: z.infer<typeof profileFormSchema>) => {
+  const getProfile = useCallback(async () => {
+    try {
+      setLoading(true)
+
+      let { data, error, status } = await supabase
+        .from('profiles')
+        .select(`first_name, last_name, username, bio, avatar_url`)
+        .eq('id', user?.id!)
+        .single()
+
+      if (error && status !== 406) {
+        throw error
+      }
+
+      if (data) {
+        form.setValue('firstName', data.first_name || '')
+        form.setValue('lastName', data.last_name || '')
+        form.setValue('username', data.username || '')
+        form.setValue('bio', data.bio || '')
+      }
+    } catch (error) {
+      alert('Error loading user data!')
+    } finally {
+      setLoading(false)
+    }
+  }, [supabase, user?.id, form])
+
+  useEffect(() => {
+    void getProfile()
+  }, [user, getProfile])
+
+
+  const handleSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     console.log(values)
+
+    const { firstName, lastName, username, bio } = values
+
+    try {
+      setLoading(true)
+
+      let { error } = await supabase.from('profiles').upsert({
+        id: user?.id as string,
+        username,
+        first_name: firstName,
+        last_name: lastName,
+        bio,
+        updated_at: new Date().toISOString(),
+      })
+      if (error) throw error
+      alert('Profile updated!')
+    } catch (error) {
+      alert('Error updating the data!')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -46,7 +109,7 @@ export default function ProfileForm() {
             <FormItem>
               <FormLabel>First Name</FormLabel>
               <FormControl>
-                <Input placeholder="First name" {...field} />
+                <Input placeholder="First name" disabled={loading} {...field} />
               </FormControl>
               <FormDescription>
                 This is how your name will be displayed in the app.
@@ -62,7 +125,7 @@ export default function ProfileForm() {
             <FormItem>
               <FormLabel>Last Name</FormLabel>
               <FormControl>
-                <Input placeholder="Last name" {...field} />
+                <Input placeholder="Last name" disabled={loading} {...field}  />
               </FormControl>
               <FormDescription>
                 This is how your last name will be displayed in the app.
@@ -73,15 +136,15 @@ export default function ProfileForm() {
         />
         <FormField
           control={form.control}
-          name="email"
+          name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="email@example.com" {...field} />
+                <Input placeholder="username" disabled={loading} {...field} />
               </FormControl>
               <FormDescription>
-                This is how your email will be displayed in the app.
+                This is how your username will be displayed in the app.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -97,6 +160,7 @@ export default function ProfileForm() {
                 <Textarea
                   placeholder="Tell us a little bit about yourself"
                   className="resize-none"
+                  disabled={loading}
                   {...field}
                 />
               </FormControl>
@@ -107,7 +171,10 @@ export default function ProfileForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Update</Button>
+        <Button disabled={loading} type="submit">
+          {loading && <Loader2 className="animate-spin" size={16} />}
+          Update
+        </Button>
       </form>
     </Form>
   )

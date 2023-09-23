@@ -11,8 +11,10 @@ export const profileFormSchema = z.object({
   }).max(50, {
     message: "Last name must be at most 50 characters long",
   }),
-  email: z.string().email({
-    message: "Please enter a valid email address",
+  username: z.string().min(3, {
+    message: "Username must be at least 3 characters long",
+  }).max(50, {
+    message: "Username must be at most 15 characters long",
   }),
   bio: z.string().max(160, {
     message: "Bio must be at most 160 characters long",
