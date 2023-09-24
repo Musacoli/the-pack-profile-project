@@ -32,21 +32,20 @@ type Profiles = Database['public']['Tables']['profiles']['Row']
 
 export default function ProfileForm({ uid, profile }: { uid: string | null, profile: Partial<Profiles> | null }) {
 
-  const form = useForm<z.infer<typeof profileFormSchema>>({
-    resolver: zodResolver(profileFormSchema)
-  })
-
-  useEffect(() => {
-    if (profile) {
-      form.setValue('firstName', profile.first_name || '')
-      form.setValue('lastName', profile.last_name || '')
-      form.setValue('username', profile.username || '')
-      form.setValue('bio', profile.bio || '')
-    }
-  }, [form, profile, uid]);
+  useEffect(() => {}, [profile, uid]);
 
   const supabase = createClientComponentClient<Database>()
   const [loading, setLoading] = useState(false)
+
+  const form = useForm<z.infer<typeof profileFormSchema>>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      firstName: profile?.first_name || "",
+      lastName: profile?.last_name || "",
+      username: profile?.username || "",
+      bio: profile?.bio || "",
+    },
+  })
 
   const handleSubmit = async (values: z.infer<typeof profileFormSchema>) => {
 

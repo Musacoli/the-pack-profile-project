@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import ProfileAvatar from "@/components/profile-avatar";
 import ProfileForm from "@/components/profile-form";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton"
 
 // Types
 import { Database } from "@/types/supabase";
@@ -50,7 +51,37 @@ export default function ProfileSection({ session }: { session: Session | null })
     void getProfile()
   }, [user, getProfile])
 
-  return (
+  return loading ? (
+    <div className="grid gap-20 grid-cols-1 lg:grid-cols-2">
+      <div className="flex flex-col space-y-10">
+        <Skeleton className="h-[300px] w-[300px] rounded-full" />
+        <form action="/auth/signout" method="post">
+          <Button className="w-full" variant="outline" type="submit">
+            Sign out
+          </Button>
+        </form>
+      </div>
+      <div className="flex flex-col space-y-6">
+        <div className="flex flex-col">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="flex flex-col">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="flex flex-col">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="flex flex-col">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  ) : (
     <div className="grid gap-20 grid-cols-1 lg:grid-cols-2">
       <div className="flex flex-col space-y-10">
         <ProfileAvatar uid={id} email={email!} url={profile?.avatar_url as string} />
