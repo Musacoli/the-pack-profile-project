@@ -98,10 +98,16 @@ export default function ProfileAvatar ({
 
 
   return (
-    <Avatar className={cn("group w-[300px] h-[300px] lg:w-[500px] lg:h-[500px]", uploading && "animate-pulse")}>
+    <Avatar className={cn("group w-[300px] h-[300px] lg:w-[500px] bg-gray-200 lg:h-[500px] hover:cursor-pointer", uploading && "animate-pulse")}>
       <Input type="file" accept="image/*" onChange={uploadAvatar}
              className="hidden group-hover:flex group-hover:cursor-pointer items-center justify-center opacity-30 w-full h-full absolute"/>
-      <AvatarImage src={avatarSrc || `https://www.gravatar.com/avatar/${md5(email)}?s=300`} />
+      {
+        (avatarSrc || email)
+          ? <AvatarImage src={avatarSrc || `https://www.gravatar.com/avatar/${md5(email)}?s=300`} />
+          : <div className="flex w-full justify-center items-center">
+              <p className="text-xl font-bold z-20">Upload a Profile Picture</p>
+            </div>
+      }
     </Avatar>
 
   )
