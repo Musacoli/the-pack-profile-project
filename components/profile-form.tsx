@@ -171,7 +171,7 @@ export default function ProfileForm({ session }: { session: Session | null }) {
             </FormItem>
           )}
         />
-        <Button disabled={loading} type="submit">
+        <Button className="w-full" disabled={loading} type="submit">
           {loading && <Loader2 className="animate-spin" size={16} />}
           Update
         </Button>
