@@ -88,6 +88,8 @@ export default function ProfileAvatar ({
 
       setAvatarSrc(avatarUrl)
 
+      toast.success("Avatar updated successfully.")
+
     } catch (error) {
       toast.error(`Failed to upload avatar: ${error}`)
       console.log(error)
