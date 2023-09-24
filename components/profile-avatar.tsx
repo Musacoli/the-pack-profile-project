@@ -63,11 +63,9 @@ export default function ProfileAvatar ({
       const fileExt = file.name.split('.').pop()
       const filePath = `${uid}-${Math.random()}.${fileExt}`
 
-      let {data, error: uploadError} = await supabase.storage
+      let { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file)
-
-      console.log("data", data)
 
       if (uploadError) {
         console.log("uploadError", uploadError)
