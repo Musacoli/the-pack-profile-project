@@ -2,9 +2,9 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
 // Components
-import ProfileForm from "@/components/profile-form";
-import ProfileAvatar from "@/components/profile-avatar";
-import { Button } from "@/components/ui/button";
+import ProfileSection from "@/components/profile-section";
+
+// Types
 import { Database } from '@/types/supabase'
 
 
@@ -15,19 +15,7 @@ export default async function Profile() {
     data: { session },
   } = await supabase.auth.getSession()
 
-  return (
-    <div className="grid gap-20 grid-cols-1 lg:grid-cols-2">
-      <div className="flex flex-col space-y-10">
-        <ProfileAvatar uid={session?.user?.id!} email={session?.user?.email!} />
-        <form action="/auth/signout" method="post">
-          <Button className="w-full" variant="outline" type="submit">
-            Sign out
-          </Button>
-        </form>
-      </div>
-      <ProfileForm session={session} />
-    </div>
-  )
+  return <ProfileSection session={session} />
 }
 
 export const dynamic = 'force-dynamic'

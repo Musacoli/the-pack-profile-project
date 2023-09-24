@@ -1,14 +1,14 @@
 'use client'
 
 import md5 from 'md5'
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import toast from 'react-hot-toast';
 
 import {createClientComponentClient} from '@supabase/auth-helpers-nextjs'
 import {Database} from "@/types/supabase";
 
 // Components
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Avatar, AvatarImage} from "@/components/ui/avatar"
 import {Input} from "@/components/ui/input"
 import {cn} from "@/lib/utils";
 
@@ -18,14 +18,34 @@ type Profiles = Database['public']['Tables']['profiles']['Row']
 export default function ProfileAvatar ({
   uid,
   email,
+  url
 }: {
   uid: string
   email: string
+  url: Profiles['avatar_url']
 }) {
   const supabase = createClientComponentClient<Database>()
 
   const [uploading, setUploading] = useState(false)
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function downloadImage(path: string) {
+      try {
+        const { data, error } = await supabase.storage.from('avatars').download(path)
+        if (error) {
+          throw error
+        }
+
+        const url = URL.createObjectURL(data)
+        setAvatarSrc(url)
+      } catch (error) {
+        console.log('Error downloading image: ', error)
+      }
+    }
+
+    if (url) void downloadImage(url)
+  }, [url, supabase])
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -41,7 +61,6 @@ export default function ProfileAvatar ({
       const file = event.target.files[0]
 
       const fileExt = file.name.split('.').pop()
-      const fileName = `${new Date()}.${fileExt}`
       const filePath = `${uid}-${Math.random()}.${fileExt}`
 
       let {data, error: uploadError} = await supabase.storage
@@ -53,6 +72,15 @@ export default function ProfileAvatar ({
       if (uploadError) {
         console.log("uploadError", uploadError)
         toast.error(`Failed to upload image: ${uploadError}`)
+      }
+
+      let { error } = await supabase.from('profiles').update({
+        avatar_url: filePath
+      }).eq('id', uid).select()
+
+      if (error) {
+        console.log("error", error)
+        toast.error(`Failed to upload image: ${error}`)
       }
 
       // create a storage ref

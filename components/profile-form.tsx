@@ -2,8 +2,8 @@
 
 import * as z from "zod";
 
-import { useCallback, useEffect, useState } from 'react'
-import { Session, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import {useEffect, useState} from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react"
@@ -27,53 +27,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { profileFormSchema } from "@/lib/formSchemas/profileForm";
 import { Database } from "@/types/supabase";
 
-export default function ProfileForm({ session }: { session: Session | null }) {
-  const supabase = createClientComponentClient<Database>()
-  const [loading, setLoading] = useState(true)
+// Types
+type Profiles = Database['public']['Tables']['profiles']['Row']
 
-  const user = session?.user
+export default function ProfileForm({ uid, profile }: { uid: string | null, profile: Partial<Profiles> | null }) {
 
   const form = useForm<z.infer<typeof profileFormSchema>>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      username: "",
-      bio: "",
-    },
+    resolver: zodResolver(profileFormSchema)
   })
 
-  const getProfile = useCallback(async () => {
-    try {
-      setLoading(true)
-
-      let { data, error, status } = await supabase
-        .from('profiles')
-        .select(`first_name, last_name, username, bio, avatar_url`)
-        .eq('id', user?.id!)
-        .single()
-
-      if (error && status !== 406) {
-        throw error
-      }
-
-      if (data) {
-        form.setValue('firstName', data.first_name || '')
-        form.setValue('lastName', data.last_name || '')
-        form.setValue('username', data.username || '')
-        form.setValue('bio', data.bio || '')
-      }
-    } catch (error) {
-      toast.error('Error loading user data!')
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase, user?.id, form])
-
   useEffect(() => {
-    void getProfile()
-  }, [user, getProfile])
+    if (profile) {
+      form.setValue('firstName', profile.first_name || '')
+      form.setValue('lastName', profile.last_name || '')
+      form.setValue('username', profile.username || '')
+      form.setValue('bio', profile.bio || '')
+    }
+  }, [form, profile, uid]);
 
+  const supabase = createClientComponentClient<Database>()
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (values: z.infer<typeof profileFormSchema>) => {
 
@@ -83,7 +56,7 @@ export default function ProfileForm({ session }: { session: Session | null }) {
       setLoading(true)
 
       let { error } = await supabase.from('profiles').upsert({
-        id: user?.id as string,
+        id: uid as string,
         username,
         first_name: firstName,
         last_name: lastName,
