@@ -4,6 +4,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+### Environment Setup
+Make sure ask for the environmental variables based off the `env.example` and add them to your local `.env.local` file.
+
+### Running the application
 First, run the development server:
 
 ```bash
